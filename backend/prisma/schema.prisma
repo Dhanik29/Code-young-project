@@ -1,0 +1,52 @@
+// Prisma Schema for Codeyoung Trial Booking System
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Mentor {
+  id         String    @id @default(uuid())
+  name       String
+  email      String    @unique
+  timezone   String    @default("Asia/Kolkata")
+  dailyLimit Int       @default(2)
+  createdAt  DateTime  @default(now())
+  bookings   Booking[]
+
+  @@map("mentors")
+}
+
+model Parent {
+  id        String    @id @default(uuid())
+  name      String
+  email     String
+  country   String
+  timezone  String
+  createdAt DateTime  @default(now())
+  bookings  Booking[]
+
+  @@map("parents")
+}
+
+model Booking {
+  id             String   @id @default(uuid())
+  parentId       String
+  mentorId       String
+  course         String   @default("Coding")
+  bookingDateUTC DateTime // Stored in UTC only
+  parentTimezone String
+  mentorTimezone String
+  meetingLink    String
+  createdAt      DateTime @default(now())
+
+  parent Parent @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  mentor Mentor @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+
+  @@index([mentorId, bookingDateUTC])
+  @@index([parentId])
+  @@map("bookings")
+}

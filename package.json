@@ -1,0 +1,38 @@
+{
+  "name": "codeyoung-trial-booking-system",
+  "version": "1.0.0",
+  "description": "Production-ready trial class appointment booking system for Codeyoung with Luxon timezone handling, Prisma ORM, and React frontend",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm --prefix backend install && npm --prefix frontend install",
+    "db:push": "npm --prefix backend run prisma:push",
+    "db:seed": "npm --prefix backend run prisma:seed",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev": "concurrently -k -p \"[{name}]\" -n \"BACKEND,FRONTEND\" -c \"cyan.bold,magenta.bold\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "start": "npm run dev:backend",
+    "simulate": "node backend/scripts/simulateBookings.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "overrides": {
+    "rollup": "npm:@rollup/wasm-node"
+  },
+  "keywords": [
+    "codeyoung",
+    "appointment-booking",
+    "luxon",
+    "timezone",
+    "prisma",
+    "express",
+    "react",
+    "vite"
+  ],
+  "author": "Full-Stack Software Engineer",
+  "license": "ISC"
+}
