@@ -2,6 +2,7 @@
 
 This transcript documents the step-by-step AI-assisted architectural design, decision-making, and implementation phases for the Codeyoung Full-Stack Developer assignment, fulfilling the submission requirement.
 
+## AI CHAT= https://chatgpt.com/share/6ab9180e-000c-83ee-9806-97131e04eec3
 ---
 
 ## 📌 Development Overview

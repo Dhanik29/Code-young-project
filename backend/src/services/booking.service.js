@@ -230,31 +230,33 @@ export const createBookingService = async (bookingInput) => {
     createdAt: createdBooking.createdAt,
   };
 
-  // 9. Send confirmation emails (non-blocking — failure does not cancel booking)
-  sendBookingConfirmationEmails({
-    course: result.course,
-    meetingLink: result.meetingLink,
-    bookingId: result.bookingId,
-    bookingDateUTC: result.bookingDateUTC,
-    childName: bookingInput.childName || null,
-    childGrade: bookingInput.childGrade || null,
-    city: bookingInput.city || null,
-    schoolName: bookingInput.schoolName || null,
-    parent: {
-      name: result.parent.name,
-      email: result.parent.email,
-      country: result.parent.country,
-      timezone: result.parent.timezone,
-      formattedTime: result.parent.formattedTime,
-    },
-    mentor: {
-      name: result.mentor.name,
-      email: result.mentor.email,
-      formattedTime: result.mentor.formattedTime,
-    },
-  }).catch((err) => {
-    console.error('⚠️ Email sending failed (non-blocking):', err.message);
-  });
+  // 9. Send confirmation emails (awaited so serverless runtime allows email to complete)
+  try {
+    await sendBookingConfirmationEmails({
+      course: result.course,
+      meetingLink: result.meetingLink,
+      bookingId: result.bookingId,
+      bookingDateUTC: result.bookingDateUTC,
+      childName: bookingInput.childName || null,
+      childGrade: bookingInput.childGrade || null,
+      city: bookingInput.city || null,
+      schoolName: bookingInput.schoolName || null,
+      parent: {
+        name: result.parent.name,
+        email: result.parent.email,
+        country: result.parent.country,
+        timezone: result.parent.timezone,
+        formattedTime: result.parent.formattedTime,
+      },
+      mentor: {
+        name: result.mentor.name,
+        email: result.mentor.email,
+        formattedTime: result.mentor.formattedTime,
+      },
+    });
+  } catch (err) {
+    console.error('⚠️ Email sending failed:', err.message);
+  }
 
   return result;
 };
