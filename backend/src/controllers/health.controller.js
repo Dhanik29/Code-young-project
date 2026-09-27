@@ -5,10 +5,12 @@ export const getHealth = async (req, res, next) => {
   try {
     let dbStatus = 'ok';
     let mentorCount = 0;
+    let dbError = null;
     try {
       mentorCount = await prisma.mentor.count();
     } catch (e) {
       dbStatus = 'disconnected';
+      dbError = e.message;
     }
 
     return sendSuccess(res, {
@@ -16,6 +18,7 @@ export const getHealth = async (req, res, next) => {
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
       database: dbStatus,
+      dbError,
       totalMentors: mentorCount,
       environment: process.env.NODE_ENV || 'development',
     }, 200, 'Server is running smoothly');
