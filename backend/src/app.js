@@ -22,6 +22,7 @@ app.use(
       if (
         env.NODE_ENV === 'development' ||
         origin === env.CORS_ORIGIN ||
+        origin.endsWith('.vercel.app') ||
         origin.startsWith('http://localhost')
       ) {
         return callback(null, true);
