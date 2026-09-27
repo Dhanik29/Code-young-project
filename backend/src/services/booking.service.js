@@ -53,46 +53,50 @@ export const createBookingService = async (bookingInput) => {
     });
   }
 
-  // 4. Evaluate each mentor for conflict and daily limit
+  // 4. Batch query: Fetch all bookings on mentor calendar day in 1 single query
+  const { startOfDayUTC, endOfDayUTC, mentorDateString } = getMentorDayBoundariesUTC(
+    utcDateTime,
+    mentors[0]?.timezone || 'Asia/Kolkata'
+  );
+
+  const dayBookings = await prisma.booking.findMany({
+    where: {
+      bookingDateUTC: {
+        gte: startOfDayUTC,
+        lte: endOfDayUTC,
+      },
+    },
+    select: {
+      mentorId: true,
+      bookingDateUTC: true,
+    },
+  });
+
+  const dailyCountByMentor = {};
+  const busyMentorIdsAtSlot = new Set();
+
+  for (const b of dayBookings) {
+    dailyCountByMentor[b.mentorId] = (dailyCountByMentor[b.mentorId] || 0) + 1;
+    if (new Date(b.bookingDateUTC).getTime() === targetUTCJSDate.getTime()) {
+      busyMentorIdsAtSlot.add(b.mentorId);
+    }
+  }
+
   const eligibleMentors = [];
-  let slotConflictCount = 0; // how many mentors are busy at this exact slot
-  let dailyLimitCount = 0;   // how many mentors hit daily limit
+  let slotConflictCount = 0;
+  let dailyLimitCount = 0;
 
   for (const mentor of mentors) {
-    // Mentor's local calendar day start and end in UTC
-    const { startOfDayUTC, endOfDayUTC, mentorDateString } = getMentorDayBoundariesUTC(
-      utcDateTime,
-      mentor.timezone
-    );
-
-    // Check if mentor has a slot conflict at this exact time
-    const conflictingBooking = await prisma.booking.findFirst({
-      where: {
-        mentorId: mentor.id,
-        bookingDateUTC: targetUTCJSDate,
-      },
-    });
-
-    if (conflictingBooking) {
+    if (busyMentorIdsAtSlot.has(mentor.id)) {
       slotConflictCount++;
-      continue; // Mentor is busy at this slot
+      continue;
     }
 
-    // Check daily booking count for this mentor on their local calendar day (IST)
-    const dailyBookingCount = await prisma.booking.count({
-      where: {
-        mentorId: mentor.id,
-        bookingDateUTC: {
-          gte: startOfDayUTC,
-          lte: endOfDayUTC,
-        },
-      },
-    });
-
-    if (dailyBookingCount < mentor.dailyLimit) {
+    const count = dailyCountByMentor[mentor.id] || 0;
+    if (count < mentor.dailyLimit) {
       eligibleMentors.push({
         mentor,
-        dayBookingCount: dailyBookingCount,
+        dayBookingCount: count,
         mentorDateString,
       });
     } else {

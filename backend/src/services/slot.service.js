@@ -89,40 +89,42 @@ export const getAvailableSlots = async (dateStr, parentTimezone) => {
     }
 
     const slotTargetJSDate = utcDateTime.toJSDate();
+    const { startOfDayUTC, endOfDayUTC } = getMentorDayBoundariesUTC(
+      utcDateTime,
+      'Asia/Kolkata'
+    );
 
-    // 3. Check each mentor's eligibility for this slot
+    // Fetch all bookings for this slot's mentor day in batch
+    const dayBookings = await prisma.booking.findMany({
+      where: {
+        bookingDateUTC: {
+          gte: startOfDayUTC,
+          lte: endOfDayUTC,
+        },
+      },
+      select: {
+        mentorId: true,
+        bookingDateUTC: true,
+      },
+    });
+
+    const dailyCountByMentor = {};
+    const busyMentorIdsAtSlot = new Set();
+    for (const b of dayBookings) {
+      dailyCountByMentor[b.mentorId] = (dailyCountByMentor[b.mentorId] || 0) + 1;
+      if (new Date(b.bookingDateUTC).getTime() === slotTargetJSDate.getTime()) {
+        busyMentorIdsAtSlot.add(b.mentorId);
+      }
+    }
+
     let availableMentorsCount = 0;
     let mentorsWithDailyQuotaLeft = 0;
 
     for (const mentor of mentors) {
-      const { startOfDayUTC, endOfDayUTC } = getMentorDayBoundariesUTC(
-        utcDateTime,
-        mentor.timezone
-      );
-
-      // Check daily booking count for mentor on their local calendar day
-      const dailyCount = await prisma.booking.count({
-        where: {
-          mentorId: mentor.id,
-          bookingDateUTC: {
-            gte: startOfDayUTC,
-            lte: endOfDayUTC,
-          },
-        },
-      });
-
-      if (dailyCount < mentor.dailyLimit) {
+      const count = dailyCountByMentor[mentor.id] || 0;
+      if (count < mentor.dailyLimit) {
         mentorsWithDailyQuotaLeft++;
-
-        // Check if mentor already has a booking at this exact UTC time
-        const conflictingBooking = await prisma.booking.findFirst({
-          where: {
-            mentorId: mentor.id,
-            bookingDateUTC: slotTargetJSDate,
-          },
-        });
-
-        if (!conflictingBooking) {
+        if (!busyMentorIdsAtSlot.has(mentor.id)) {
           availableMentorsCount++;
         }
       }
