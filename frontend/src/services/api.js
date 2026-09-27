@@ -42,6 +42,11 @@ export const api = {
     }),
   createBooking: (bookingData) => apiClient.post('/book', bookingData),
   getBookings: () => apiClient.get('/bookings'),
+
+  // OTP endpoints
+  sendOTP: (email, name, phone) => apiClient.post('/otp/send', { email, name, phone }),
+  verifyOTP: (email, otp) => apiClient.post('/otp/verify', { email, otp }),
+  checkDuplicate: (email, phone) => apiClient.post('/otp/check-duplicate', { email, phone }),
 };
 
 export default api;

@@ -1,12 +1,20 @@
 import app from './app.js';
 import { env } from './config/env.js';
 import { prisma } from './db.js';
+import { seedMentors } from '../prisma/seed.js';
 
 const startServer = async () => {
   try {
     // Verify database connection
     await prisma.$connect();
     console.log('📦 Connected to SQLite database successfully');
+
+    // Auto-seed mentors if registry is empty
+    const mentorCount = await prisma.mentor.count();
+    if (mentorCount === 0) {
+      console.log('🌱 No mentors found in database. Auto-seeding default mentors...');
+      await seedMentors(prisma);
+    }
 
     const server = app.listen(env.PORT, () => {
       console.log(`🚀 Codeyoung Booking API running on port ${env.PORT}`);

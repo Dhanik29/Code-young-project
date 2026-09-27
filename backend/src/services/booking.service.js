@@ -40,12 +40,17 @@ export const createBookingService = async (bookingInput) => {
   const targetUTCJSDate = utcDateTime.toJSDate();
 
   // 3. Fetch all mentors deterministically
-  const mentors = await prisma.mentor.findMany({
+  let mentors = await prisma.mentor.findMany({
     orderBy: { name: 'asc' },
   });
 
   if (!mentors || mentors.length === 0) {
-    throw ApiError.internal('Mentor registry is uninitialized. Please ensure mentors are seeded.');
+    console.log('🌱 No mentors found during booking. Auto-seeding mentors now...');
+    const { seedMentors } = await import('../../prisma/seed.js');
+    await seedMentors(prisma);
+    mentors = await prisma.mentor.findMany({
+      orderBy: { name: 'asc' },
+    });
   }
 
   // 4. Evaluate each mentor for conflict and daily limit
@@ -156,6 +161,7 @@ export const createBookingService = async (bookingInput) => {
         data: {
           name,
           email: email.toLowerCase(),
+          phone: bookingInput.phone ? bookingInput.phone.trim() : null,
           country,
           timezone,
         },
@@ -163,7 +169,12 @@ export const createBookingService = async (bookingInput) => {
     } else {
       parent = await tx.parent.update({
         where: { id: parent.id },
-        data: { name, country, timezone },
+        data: {
+          name,
+          phone: bookingInput.phone ? bookingInput.phone.trim() : parent.phone,
+          country,
+          timezone,
+        },
       });
     }
 
@@ -220,6 +231,11 @@ export const createBookingService = async (bookingInput) => {
     course: result.course,
     meetingLink: result.meetingLink,
     bookingId: result.bookingId,
+    bookingDateUTC: result.bookingDateUTC,
+    childName: bookingInput.childName || null,
+    childGrade: bookingInput.childGrade || null,
+    city: bookingInput.city || null,
+    schoolName: bookingInput.schoolName || null,
     parent: {
       name: result.parent.name,
       email: result.parent.email,

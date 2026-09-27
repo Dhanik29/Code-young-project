@@ -65,22 +65,22 @@ const SEED_MENTORS = [
   },
 ];
 
-export async function seedMentors() {
+export async function seedMentors(dbClient = prisma) {
   console.log('🌱 Starting database seeding...');
 
   let createdCount = 0;
   for (const mentor of SEED_MENTORS) {
-    const existing = await prisma.mentor.findUnique({
+    const existing = await dbClient.mentor.findUnique({
       where: { email: mentor.email },
     });
 
     if (!existing) {
-      await prisma.mentor.create({
+      await dbClient.mentor.create({
         data: mentor,
       });
       createdCount++;
     } else {
-      await prisma.mentor.update({
+      await dbClient.mentor.update({
         where: { email: mentor.email },
         data: {
           name: mentor.name,
@@ -91,7 +91,7 @@ export async function seedMentors() {
     }
   }
 
-  const totalMentors = await prisma.mentor.count();
+  const totalMentors = await dbClient.mentor.count();
   console.log(`✅ Seeding complete. Created: ${createdCount}, Total Mentors: ${totalMentors}`);
 }
 

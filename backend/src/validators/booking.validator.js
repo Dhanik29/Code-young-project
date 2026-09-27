@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { isValidTimezone, parseLocalToUTC, isFutureDateTime } from '../utils/timezone.js';
+import { isValidTimezone, parseLocalToUTC, isFutureDateTime, isWithinMaxAdvanceDays } from '../utils/timezone.js';
 import { SUPPORTED_TIMEZONES, DEFAULT_TRIAL_SLOT_HOURS } from '../config/constants.js';
 
 export const bookingSchema = z.object({
@@ -16,10 +16,15 @@ export const bookingSchema = z.object({
     .toLowerCase(),
 
   course: z
-    .enum(['Coding', 'Mathematics', 'English', 'AI & Robotics', 'Public Speaking'], {
-      required_error: 'Course selection is required',
-      invalid_type_error: 'Selected course is not supported',
-    }),
+    .string({ required_error: 'Course selection is required' })
+    .trim()
+    .min(2, 'Course name must be at least 2 characters'),
+
+  phone: z.string().optional(),
+  childName: z.string().optional(),
+  childGrade: z.string().optional(),
+  city: z.string().optional(),
+  schoolName: z.string().optional(),
 
   country: z
     .string({ required_error: 'Country is required' })
@@ -54,13 +59,20 @@ export const bookingSchema = z.object({
       });
     }
 
-    // Verify slot falls within Mentor working hours: 09:00 to 21:00 IST
-    const mentorDt = utcDateTime.setZone('Asia/Kolkata');
-    if (mentorDt.hour < 9 || mentorDt.hour >= 21) {
+    if (!isWithinMaxAdvanceDays(utcDateTime, 90)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['date'],
+        message: 'Booking date only permits scheduling up to 90 days in advance.',
+      });
+    }
+
+    // Ensure valid parsed date & time
+    if (!utcDateTime.isValid) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['time'],
-        message: `The selected time maps to ${mentorDt.toFormat('hh:mm a')} IST, which is outside mentor working hours (9:00 AM - 9:00 PM IST).`,
+        message: 'Invalid date or time specified for the selected timezone.',
       });
     }
   } catch (err) {

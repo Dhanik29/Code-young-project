@@ -129,3 +129,15 @@ export const isFutureDateTime = (utcDateTime, bufferMinutes = 15) => {
   const nowUTC = DateTime.utc();
   return utcDateTime > nowUTC.plus({ minutes: bufferMinutes });
 };
+
+/**
+ * Checks if a UTC DateTime is within the maximum allowed days in advance (e.g. 90 days).
+ * @param {DateTime} utcDateTime
+ * @param {number} maxDays
+ * @returns {boolean}
+ */
+export const isWithinMaxAdvanceDays = (utcDateTime, maxDays = 90) => {
+  const maxAllowedUTC = DateTime.utc().plus({ days: maxDays }).endOf('day');
+  return utcDateTime <= maxAllowedUTC;
+};
+

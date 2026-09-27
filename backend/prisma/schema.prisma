@@ -24,6 +24,7 @@ model Parent {
   id        String    @id @default(uuid())
   name      String
   email     String
+  phone     String?
   country   String
   timezone  String
   createdAt DateTime  @default(now())

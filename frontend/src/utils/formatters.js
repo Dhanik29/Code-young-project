@@ -18,3 +18,12 @@ export const getTomorrowISO = () => {
   tomorrow.setDate(tomorrow.getDate() + 1);
   return formatDateToISO(tomorrow);
 };
+
+/**
+ * Returns maximum booking date (up to 90 days ahead) formatted as YYYY-MM-DD
+ */
+export const getMaxBookingDateISO = (daysAhead = 90) => {
+  const maxDate = new Date();
+  maxDate.setDate(maxDate.getDate() + daysAhead);
+  return formatDateToISO(maxDate);
+};

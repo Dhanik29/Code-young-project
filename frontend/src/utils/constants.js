@@ -27,11 +27,11 @@ export const COUNTRIES = [
 ];
 
 export const COURSES = [
-  'Coding',
-  'Mathematics',
+  'Math Mystery',
+  'Coding & AI',
   'English',
-  'AI & Robotics',
-  'Public Speaking',
+  'Science',
+  'Vedic / Speed Math',
 ];
 
 export const DETECTED_TIMEZONE = (() => {

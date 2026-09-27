@@ -21,6 +21,28 @@ export const SuccessPage = () => {
     }
   };
 
+  const handleAddToGoogleCalendar = () => {
+    try {
+      const startDateTime = booking.bookingDateUTC ? new Date(booking.bookingDateUTC) : new Date();
+      const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000); // 1 hour duration
+      const fmtGCal = (d) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      const datesParam = `${fmtGCal(startDateTime)}/${fmtGCal(endDateTime)}`;
+      const title = encodeURIComponent(`Codeyoung 1:1 Trial Class - ${booking.course || 'Coding'}`);
+      const details = encodeURIComponent(
+        `1:1 ${booking.course || 'Coding'} Trial Class with Codeyoung.\n\n` +
+        `Mentor: ${booking.mentor?.name || 'Assigned Mentor'}\n` +
+        `Meeting Link: ${booking.meetingLink || ''}\n` +
+        `Booking ID: ${booking.bookingId || ''}\n\n` +
+        `Please join 5 minutes early using Google Chrome.`
+      );
+      const location = encodeURIComponent(booking.meetingLink || '');
+      const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${datesParam}&details=${details}&location=${location}`;
+      window.open(gcalUrl, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      console.error('Error creating Google Calendar event URL:', err);
+    }
+  };
+
   return (
     <div className="page-wrapper">
       <div className="success-card">
@@ -111,6 +133,22 @@ export const SuccessPage = () => {
           >
             {copied ? 'Copied! ✓' : 'Copy Link 📋'}
           </button>
+        </div>
+
+        {/* Add Event to Google Calendar Action */}
+        <div className="calendar-action-card">
+          <button
+            type="button"
+            onClick={handleAddToGoogleCalendar}
+            className="btn btn-gcal"
+            id="btn-add-gcal"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 4H18V2H16V4H8V2H6V4H5C3.89 4 3.01 4.9 3.01 6L3 20C3 21.1 3.89 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4H19ZM19 20H5V10H19V20ZM19 8H5V6H19V8ZM9 14H7V12H9V14ZM13 14H11V12H13V14ZM17 14H15V12H17V14ZM9 18H7V16H9V18ZM13 18H11V16H13V18ZM17 18H15V16H17V18Z" fill="currentColor"/>
+            </svg>
+            <span>Add Event to Google Calendar</span>
+          </button>
+          <span className="gcal-hint">Sync this trial class directly to your personal Google Calendar</span>
         </div>
 
         {/* UTC & Reference Metadata */}

@@ -27,11 +27,11 @@ export const SUPPORTED_COUNTRIES = [
 ];
 
 export const SUPPORTED_COURSES = [
-  'Coding',
-  'Mathematics',
+  'Math Mystery',
+  'Coding & AI',
   'English',
-  'AI & Robotics',
-  'Public Speaking'
+  'Science',
+  'Vedic / Speed Math',
 ];
 
 export const MENTOR_DEFAULT_TIMEZONE = 'Asia/Kolkata';
@@ -39,9 +39,9 @@ export const MENTOR_DAILY_BOOKING_LIMIT = 2;
 export const TOTAL_MENTORS_COUNT = 10;
 export const SLOT_DURATION_MINUTES = 60;
 
-// Mentor Working Hours (Asia/Kolkata IST): 9:00 AM to 9:00 PM IST
-export const MENTOR_WORK_START_HOUR_IST = 9;  // 09:00 IST
-export const MENTOR_WORK_END_HOUR_IST = 21;    // 21:00 IST (Last 1-hr slot starts at 20:00 IST)
+// Mentor Working Hours (Asia/Kolkata IST): 8:00 AM to 11:00 PM IST (accommodates US & UK trial slots)
+export const MENTOR_WORK_START_HOUR_IST = 8;  // 08:00 IST
+export const MENTOR_WORK_END_HOUR_IST = 23;    // 23:00 IST
 
 // Standard parent local slots offered for trial classes (9 AM to 8 PM)
 export const DEFAULT_TRIAL_SLOT_HOURS = [
