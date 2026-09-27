@@ -31,10 +31,7 @@ export const errorHandler = (err, req, res, next) => {
   // Handle generic unhandled errors (never expose internal stack trace in production)
   console.error('Unhandled Application Error:', err);
 
-  const message =
-    process.env.NODE_ENV === 'production'
-      ? 'An internal server error occurred. Please contact support.'
-      : err.message || 'Internal server error';
+  const message = err.message || 'An internal server error occurred. Please contact support.';
 
   return sendError(res, { message }, 500);
 };
